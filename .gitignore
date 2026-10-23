@@ -1,0 +1,30 @@
+# 操作系统垃圾文件
+.DS_Store
+._*
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# 编辑器 / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 本地测试用的 PDF（招股书文件体积大，且多为第三方版权内容，不入库）
+*.pdf
+!libs/*.pdf
+
+# 个人导出的术语与批注数据（属于阅读记录，不入库）
+S1-术语与批注-*.md
+导出-*.md
+
+# 项目工作目录（记忆、临时笔记等）
+.workbuddy/
+
+# 本地备份 / 临时文件
+*.bak
+*.tmp
+backup*.json
+*-backup.json

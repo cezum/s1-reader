@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S-1 阅读器 · 术语与批注</title>
+<style>
+:root{
+  --bg:#e9ebee;
+  --panel:#ffffff;
+  --ink:#1a1f26;
+  --ink2:#5a626e;
+  --ink3:#8f97a3;
+  --line:#e2e6eb;
+  --line2:#eef1f4;
+  --brand:#2b5f8f;
+  --brand2:#357ab0;
+  --brandsoft:#eaf2f9;
+  --hit:#ffe98a;
+  --ann:#ffd9a8;
+  --danger:#b5453c;
+  --shadow:0 1px 2px rgba(20,30,40,.06), 0 8px 24px rgba(20,30,40,.08);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  font-family:"Segoe UI","Microsoft YaHei","PingFang SC",-apple-system,sans-serif;
+  font-size:13px;color:var(--ink);background:var(--bg);
+  -webkit-font-smoothing:antialiased;overflow:hidden;
+}
+button{font-family:inherit;font-size:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea{font-family:inherit;font-size:inherit;color:inherit}
+.hidden{display:none !important}
+
+/* ---------- topbar ---------- */
+.topbar{
+  height:52px;display:flex;align-items:center;gap:8px;padding:0 14px;
+  background:var(--panel);border-bottom:1px solid var(--line);
+  position:relative;z-index:30;
+}
+.brand{font-size:14px;font-weight:600;letter-spacing:.2px;white-space:nowrap}
+.brand .sub{font-weight:400;color:var(--ink3);font-size:12px;margin-left:6px}
+.sep{width:1px;height:20px;background:var(--line);margin:0 4px}
+.btn{
+  height:30px;padding:0 12px;border-radius:6px;border:1px solid var(--line);
+  background:#fff;color:var(--ink2);transition:.15s;white-space:nowrap;
+}
+.btn:hover{background:#f7f9fa;border-color:#cfd6de;color:var(--ink)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.primary:hover{background:var(--brand2);border-color:var(--brand2);color:#fff}
+.btn.danger{color:var(--danger);border-color:#e5c9c6}
+.btn.danger:hover{background:#fdf3f2}
+.btn.small{height:26px;padding:0 9px;font-size:12px}
+.btn.on{background:var(--brandsoft);border-color:#bcd6ea;color:var(--brand)}
+.docname{
+  color:var(--ink2);font-size:12px;max-width:280px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;padding:0 6px;
+}
+.spacer{flex:1}
+.pager,.zoom{display:flex;align-items:center;gap:2px;color:var(--ink2);font-size:12px}
+.pager button,.zoom button{
+  width:24px;height:26px;border-radius:5px;color:var(--ink2);font-size:15px;line-height:1;
+}
+.pager button:hover,.zoom button:hover{background:#f0f3f6}
+#pageInput{
+  width:44px;height:26px;text-align:center;border:1px solid var(--line);
+  border-radius:5px;background:#fff;font-size:12px;
+}
+#pageInput:focus{outline:none;border-color:var(--brand2)}
+#zoomLabel{width:44px;text-align:center;font-variant-numeric:tabular-nums}
+
+/* ---------- layout ---------- */
+main{height:calc(100vh - 52px);display:flex;overflow:hidden}
+#viewer{
+  flex:1 1 0;min-width:0;overflow-y:auto;overflow-x:auto;background:var(--bg);
+  padding:22px 0 60px;scroll-behavior:auto;position:relative;
+}
+#pages{display:flex;flex-direction:column;align-items:center;gap:20px}
+
+/* ---------- page ---------- */
+.page-wrap{
+  position:relative;background:#fff;
+  box-shadow:0 1px 3px rgba(20,30,40,.14),0 6px 18px rgba(20,30,40,.08);
+  flex:none;
+}
+.page-wrap canvas{display:block;position:absolute;inset:0;width:100%;height:100%}
+.page-wrap .placeholder{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:#c3c9d2;font-size:12px;letter-spacing:.5px;
+}
+.textLayer{
+  position:absolute;inset:0;overflow:hidden;
+  line-height:1;text-align:initial;opacity:1;
+  z-index:2;
+}
+.textLayer span{
+  position:absolute;white-space:pre;transform-origin:0% 0%;
+  color:transparent;cursor:text;
+}
+.textLayer ::selection{background:rgba(53,122,176,.28)}
+.textLayer mark{background:transparent;color:transparent;padding:0;border-radius:2px}
+.textLayer mark.term-hit{
+  background:rgba(255,214,64,.42);
+  box-shadow:inset 0 -1px 0 rgba(214,164,0,.55);
+}
+.textLayer span.term-soft{background:rgba(255,214,64,.24);border-radius:2px}
+.textLayer mark.ann-hit{background:rgba(255,170,80,.34)}
+.textLayer span.ann-soft{background:rgba(255,170,80,.2);border-radius:2px}
+.page-label{
+  position:absolute;left:0;right:0;top:-17px;text-align:center;
+  font-size:10px;color:#a6aeb9;letter-spacing:1px;user-select:none;
+}
+
+/* ---------- dropzone ---------- */
+#dropzone{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:16px;
+  padding:40px;text-align:center;pointer-events:none;
+}
+#dropzone .box{
+  pointer-events:auto;width:min(560px,86vw);padding:44px 36px;border-radius:14px;
+  border:1.5px dashed #c6cfd9;background:rgba(255,255,255,.72);
+  transition:.2s;
+}
+#dropzone.drag .box{border-color:var(--brand2);background:var(--brandsoft)}
+#dropzone h2{margin:0 0 8px;font-size:17px;font-weight:600;letter-spacing:.3px}
+#dropzone p{margin:0 0 6px;color:var(--ink2);font-size:13px;line-height:1.7}
+#dropzone .hint{color:var(--ink3);font-size:12px;margin-top:14px}
+#dropzone .kbd{
+  display:inline-block;padding:1px 5px;margin:0 2px;border-radius:4px;
+  background:#f0f3f6;border:1px solid var(--line);font-size:11px;color:var(--ink2);
+}
+
+/* ---------- sidebar ---------- */
+#sidebar{
+  width:400px;flex:0 0 400px;display:flex;flex-direction:column;
+  background:var(--panel);border-left:1px solid var(--line);
+}
+#sidebar.collapsed{display:none}
+@media (max-width: 1080px){
+  #sidebar{width:320px;flex:0 0 320px}
+}
+.tabs{display:flex;border-bottom:1px solid var(--line);padding:0 10px;height:44px;align-items:flex-end;gap:2px}
+.tabs button{
+  height:34px;padding:0 12px;font-size:13px;color:var(--ink3);
+  border-bottom:2px solid transparent;display:flex;align-items:center;gap:6px;
+}
+.tabs button:hover{color:var(--ink2)}
+.tabs button.active{color:var(--ink);font-weight:600;border-bottom-color:var(--brand)}
+.tabs b{
+  font-weight:500;font-size:11px;color:var(--ink3);background:#f1f4f7;
+  padding:1px 5px;border-radius:8px;min-width:18px;text-align:center;
+}
+.tabs button.active b{background:var(--brandsoft);color:var(--brand)}
+.pane{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.searchbox{padding:10px 12px 6px}
+.searchbox input{
+  width:100%;height:32px;padding:0 10px;border-radius:7px;border:1px solid var(--line);
+  background:#f8fafb;font-size:12.5px;
+}
+.searchbox input:focus{outline:none;border-color:var(--brand2);background:#fff}
+.list{flex:1;overflow-y:auto;padding:4px 8px 16px}
+.empty{
+  padding:40px 20px;text-align:center;color:var(--ink3);font-size:12.5px;line-height:1.9;
+}
+.empty .big{font-size:22px;color:#d3d9e0;display:block;margin-bottom:8px}
+
+/* term card */
+.term-card{
+  padding:9px 10px;border-radius:8px;border:1px solid transparent;
+  cursor:pointer;transition:.12s;margin-bottom:2px;
+}
+.term-card:hover{background:#f7f9fb;border-color:var(--line2)}
+.term-card.open{background:#f8fafc;border-color:var(--line)}
+.term-card .t1{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
+.term-card .en{font-weight:600;font-size:13px;color:var(--ink);letter-spacing:.1px}
+.term-card .zh{font-size:12px;color:var(--ink2)}
+.term-card .badge{
+  font-size:10px;color:#7b8490;background:#f0f3f6;padding:1px 5px;border-radius:4px;
+  margin-left:auto;flex:none;
+}
+.term-card .def{
+  margin-top:5px;font-size:12px;color:var(--ink2);line-height:1.65;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.term-card.open .def{-webkit-line-clamp:unset;overflow:visible}
+.term-card .note{
+  margin-top:7px;padding:7px 9px;background:#fbfcfd;border-left:2px solid #d8e3ed;
+  border-radius:0 5px 5px 0;font-size:12px;color:var(--ink2);line-height:1.7;
+}
+.term-card .meta{margin-top:6px;font-size:11px;color:var(--ink3);display:flex;flex-wrap:wrap;gap:10px}
+.term-card .rel{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.term-card .rel span{
+  font-size:11px;color:var(--brand);background:var(--brandsoft);
+  padding:1px 6px;border-radius:4px;
+}
+.term-card .acts{display:flex;gap:6px;margin-top:9px}
+.term-card .acts button{
+  font-size:11px;color:var(--ink2);padding:2px 8px;border-radius:5px;border:1px solid var(--line);
+  background:#fff;
+}
+.term-card .acts button:hover{background:#f4f7f9;color:var(--ink)}
+.term-card mark{background:#fff1a8;color:inherit;padding:0 1px;border-radius:2px}
+
+/* note card */
+.note-card{
+  padding:10px;border-radius:8px;border:1px solid var(--line);margin-bottom:8px;
+  background:#fff;cursor:pointer;transition:.12s;
+}
+.note-card:hover{border-color:#cfd9e3;box-shadow:0 2px 8px rgba(20,30,40,.05)}
+.note-card .head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.note-card .pg{
+  font-size:11px;color:#fff;background:var(--brand);padding:1px 6px;border-radius:4px;
+  font-variant-numeric:tabular-nums;flex:none;
+}
+.note-card .q{
+  font-size:12px;color:var(--ink2);line-height:1.6;font-style:italic;
+  padding-left:8px;border-left:2px solid var(--ann);margin-bottom:6px;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+.note-card .body{font-size:12.5px;color:var(--ink);line-height:1.7;white-space:pre-wrap}
+.note-card .del{
+  margin-left:auto;font-size:11px;color:var(--ink3);padding:0 4px;
+}
+.note-card .del:hover{color:var(--danger)}
+
+/* ---------- outline ---------- */
+.out-item{
+  padding:5px 8px;border-radius:6px;cursor:pointer;font-size:12.5px;
+  color:var(--ink2);display:flex;align-items:baseline;gap:8px;line-height:1.55;
+}
+.out-item:hover{background:#f5f8fa;color:var(--ink)}
+.out-item .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.out-item .pg{
+  margin-left:auto;font-size:11px;color:var(--ink3);flex:none;
+  font-variant-numeric:tabular-nums;background:#f2f5f8;padding:0 5px;border-radius:4px;
+}
+.out-item.d1{padding-left:20px}
+.out-item.d2{padding-left:36px;font-size:12px;color:var(--ink3)}
+.out-item.d3{padding-left:52px;font-size:11.5px;color:var(--ink3)}
+.out-item.top{font-weight:600;color:var(--ink);margin-top:3px}
+.out-item.active{background:var(--brandsoft);color:var(--brand)}
+.out-hint{
+  font-size:11px;color:var(--ink3);padding:2px 8px 8px;
+  border-bottom:1px solid var(--line2);margin-bottom:6px;
+}
+
+/* ---------- pdf link layer ---------- */
+.linkLayer{position:absolute;inset:0;z-index:3;pointer-events:none}
+.pdf-link{
+  position:absolute;pointer-events:auto;cursor:pointer;border-radius:2px;
+  transition:background .12s;
+}
+.pdf-link:hover{background:rgba(53,122,176,.16);box-shadow:inset 0 0 0 1px rgba(53,122,176,.28)}
+.pdf-link.ext:hover{background:rgba(43,95,143,.14)}
+
+/* ---------- sidebar foot ---------- */
+.sidebar-foot{
+  border-top:1px solid var(--line);padding:8px 10px;display:flex;gap:6px;background:#fcfdfe;
+}
+
+/* ---------- selection bar ---------- */
+.selbar{
+  position:fixed;z-index:60;display:flex;gap:2px;padding:4px;
+  background:#243040;border-radius:8px;box-shadow:0 6px 20px rgba(10,20,30,.28);
+  transform:translate(-50%,-100%);white-space:nowrap;
+}
+.selbar button{
+  padding:5px 10px;border-radius:5px;color:#e8eef5;font-size:12px;transition:.12s;
+}
+.selbar button:hover{background:rgba(255,255,255,.14)}
+.selbar .divider{width:1px;background:rgba(255,255,255,.16);margin:2px 2px}
+
+/* ---------- modal ---------- */
+.modal-wrap{
+  position:fixed;inset:0;z-index:100;background:rgba(20,28,38,.34);
+  display:flex;align-items:center;justify-content:center;padding:24px;
+  backdrop-filter:blur(2px);
+}
+.modal{
+  width:min(580px,100%);max-height:calc(100vh - 60px);background:#fff;
+  border-radius:12px;box-shadow:var(--shadow);display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.modal-head{
+  padding:15px 18px 12px;display:flex;align-items:center;border-bottom:1px solid var(--line2);
+}
+.modal-head h3{margin:0;font-size:14px;font-weight:600}
+.modal-head .x{margin-left:auto;font-size:18px;color:var(--ink3);padding:0 4px;line-height:1}
+.modal-head .x:hover{color:var(--ink)}
+.modal-body{padding:16px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.modal-body label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--ink2);font-weight:500}
+.modal-body input,.modal-body textarea{
+  border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:12.5px;
+  background:#fbfcfd;line-height:1.6;resize:vertical;
+}
+.modal-body input:focus,.modal-body textarea:focus{
+  outline:none;border-color:var(--brand2);background:#fff;
+}
+.modal-body .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.req{color:var(--danger);margin-left:2px}
+.src{
+  font-size:11.5px;color:var(--ink3);line-height:1.7;background:#f7f9fb;
+  border:1px solid var(--line2);border-radius:7px;padding:9px 11px;
+}
+.src .qlab{color:var(--ink3);margin-right:4px}
+.src .qtext{color:var(--ink2);font-style:italic}
+.modal-foot{
+  padding:12px 18px;border-top:1px solid var(--line2);display:flex;gap:8px;align-items:center;
+  background:#fcfdfe;
+}
+.modal-foot .spacer{flex:1}
+
+/* ---------- menu ---------- */
+.menu{
+  position:absolute;z-index:80;background:#fff;border:1px solid var(--line);
+  border-radius:9px;box-shadow:0 10px 30px rgba(20,30,40,.14);padding:5px;
+  min-width:190px;
+}
+.menu button{
+  display:block;width:100%;text-align:left;padding:8px 10px;border-radius:6px;font-size:12.5px;
+}
+.menu button:hover{background:var(--brandsoft);color:var(--brand)}
+.menu .hr{height:1px;background:var(--line2);margin:4px 2px}
+
+/* ---------- toast ---------- */
+#toast{
+  position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(14px);
+  background:#243040;color:#f2f6fa;padding:9px 16px;border-radius:8px;font-size:12.5px;
+  opacity:0;pointer-events:none;transition:.22s;z-index:200;box-shadow:0 8px 24px rgba(10,20,30,.24);
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ---------- scrollbars ---------- */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#c8cfd8;border-radius:6px;border:3px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:#aeb7c2;background-clip:content-box}
+::-webkit-scrollbar-track{background:transparent}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">S-1 阅读器<span class="sub">术语 · 批注</span></div>
+  <div class="sep"></div>
+  <button id="btnOpen" class="btn primary">打开 PDF</button>
+  <span id="docName" class="docname">未加载文档</span>
+  <div class="spacer"></div>
+  <div class="pager">
+    <button id="btnPrev" title="上一页">‹</button>
+    <input id="pageInput" value="1" title="输入页码后回车">
+    <span style="color:var(--ink3)">/</span>
+    <span id="pageTotal" style="min-width:26px;text-align:center">0</span>
+    <button id="btnNext" title="下一页">›</button>
+  </div>
+  <div class="zoom">
+    <button id="btnZoomOut" title="缩小">−</button>
+    <span id="zoomLabel">100%</span>
+    <button id="btnZoomIn" title="放大">+</button>
+  </div>
+  <div class="sep"></div>
+  <button id="btnExport" class="btn">导出</button>
+  <button id="btnToc" class="btn">目录</button>
+  <button id="btnSidebar" class="btn on">侧栏</button>
+</header>
+
+<main>
+  <section id="viewer">
+    <div id="dropzone">
+      <div class="box">
+        <h2>把 S-1 拖进来，或者点「打开 PDF」</h2>
+        <p>在页面上选中一句话，可以<strong>存为术语</strong>、<strong>写批注</strong>，或者只是高亮。</p>
+        <p>术语会独立存成一个库，下次在别的招股书里遇到同一个词，会自动在正文标黄。</p>
+        <div class="hint">
+          快捷键：<span class="kbd">+</span><span class="kbd">−</span> 缩放 ·
+          <span class="kbd">←</span><span class="kbd">→</span> 翻页 · <span class="kbd">Ctrl</span>+<span class="kbd">F</span> 搜术语
+        </div>
+      </div>
+    </div>
+    <div id="pages"></div>
+  </section>
+
+  <aside id="sidebar">
+    <div class="tabs">
+      <button data-tab="glossary" class="active">术语库 <b id="glossCount">0</b></button>
+      <button data-tab="outline">目录</button>
+      <button data-tab="notes">批注 <b id="noteCount">0</b></button>
+    </div>
+    <div id="paneGlossary" class="pane">
+      <div class="searchbox">
+        <input id="glossSearch" placeholder="搜术语 / 中文 / 释义（Ctrl+F）">
+      </div>
+      <div id="glossList" class="list"></div>
+    </div>
+    <div id="paneOutline" class="pane hidden">
+      <div class="searchbox">
+        <input id="outlineSearch" placeholder="筛选章节，例如 Risk Factors">
+      </div>
+      <div id="outlineList" class="list"></div>
+    </div>
+    <div id="paneNotes" class="pane hidden">
+      <div class="searchbox">
+        <input id="noteSearch" placeholder="搜批注内容">
+      </div>
+      <div id="noteList" class="list"></div>
+    </div>
+    <div class="sidebar-foot">
+      <button id="btnNewTerm" class="btn small">＋ 新建术语</button>
+      <button id="btnExportJson" class="btn small">备份数据</button>
+      <button id="btnImport" class="btn small">恢复</button>
+      <input id="fileImport" type="file" accept=".json" hidden>
+    </div>
+  </aside>
+</main>
+
+<div id="selBar" class="selbar hidden">
+  <button data-act="term">存为术语</button>
+  <div class="divider"></div>
+  <button data-act="note">写批注</button>
+  <button data-act="hit">仅高亮</button>
+</div>
+
+<div id="modalWrap" class="modal-wrap hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">新建术语</h3>
+      <button class="x" id="modalClose">×</button>
+    </div>
+    <div class="modal-body" id="termForm">
+      <label>原词 / 英文<span class="req">*</span>
+        <input id="fTerm" placeholder="例如 liquidation preference">
+      </label>
+      <div class="row2">
+        <label>中文译名
+          <input id="fZh" placeholder="例如 优先清算权">
+        </label>
+        <label>常见章节
+          <input id="fSection" placeholder="例如 Description of Capital Stock">
+        </label>
+      </div>
+      <label>一句话释义（这是什么）
+        <textarea id="fDef" rows="2" placeholder="用一句完整的话说清它是什么，不要只写译名"></textarea>
+      </label>
+      <label>商业含义 / 我的理解（它实际影响什么）
+        <textarea id="fNote" rows="3" placeholder="例如：决定退出时谁先拿钱。看几倍、是否 participating。"></textarea>
+      </label>
+      <label>关联词
+        <input id="fRelated" placeholder="用逗号分隔，例如 drag-along right, tag-along right">
+      </label>
+      <div class="src hidden" id="fSrc"></div>
+    </div>
+    <div class="modal-foot">
+      <button id="btnDelTerm" class="btn danger small hidden">删除此条</button>
+      <div class="spacer"></div>
+      <button id="modalCancel" class="btn">取消</button>
+      <button id="btnSaveTerm" class="btn primary">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalNote" class="modal-wrap hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>写批注</h3>
+      <button class="x" id="noteClose">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="src" id="noteSrc"></div>
+      <label>我的想法
+        <textarea id="fNoteText" rows="5" placeholder="记下你为什么划这句、它让你想到什么、还有什么没想通"></textarea>
+      </label>
+    </div>
+    <div class="modal-foot">
+      <div class="spacer"></div>
+      <button id="noteCancel" class="btn">取消</button>
+      <button id="btnSaveNote" class="btn primary">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<input id="filePdf" type="file" accept=".pdf,application/pdf" hidden>
+
+<script src="terms-seed.js"></script>
+<script src="libs/pdf.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+# 统一用 LF，避免 Windows 下 CRLF 让 diff 变得难看
+* text=auto eol=lf
+
+# 第三方压缩构建和二进制文件不做换行符转换
+*.min.js -text
+*.pdf binary
