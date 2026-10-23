@@ -6,6 +6,28 @@
 
 ---
 
+## 看一遍怎么用
+
+<!--
+  视频占位说明（这段注释不会被渲染）：
+  GitHub 会过滤 README 里的 <video> 标签，仓库里的 .mp4 也不能直接内嵌播放。
+  唯一的办法是在 GitHub 网页端编辑本 README，把 docs/demo.mp4 拖进编辑框，
+  GitHub 会把它上传到 user-attachments 并生成一个 https://github.com/user-attachments/assets/... 链接，
+  把那个链接单独粘在下面这行占位符的位置（独占一行）即可，视频会渲染成播放器。
+-->
+
+**▶ 演示视频（66 秒，全程字幕讲解）：[`docs/demo.mp4`](docs/demo.mp4)**
+
+> 由于 GitHub 不允许 README 直接内嵌仓库内的 mp4，此处请在发布时替换为上传后的播放器链接；也可先点上面的链接下载观看。
+
+视频里是一条完整的路径：
+
+载入招股书 → 打开目录并跳转 → 选中一句话「存为术语」→ 换一份文件，看它自动标黄 → 写批注 → 导出 Markdown。
+
+想自己跑一遍，`samples/` 里有两份自制的 S-1 样张（虚构公司，无版权问题），拖进窗口就能复现上面的过程。
+
+---
+
 ## 一、怎么打开
 
 双击 `index.html` 就行，用 Edge 或 Chrome 都可以。
@@ -137,10 +159,15 @@ s1-reader/
 ├── libs/               PDF 引擎（离线，约 1.4MB）
 │   ├── pdf.min.js
 │   └── pdf.worker.min.js
-├── samples/
-│   └── sample-export.md   导出样例（术语库 + 批注）
+├── samples/            拿来试手的东西
+│   ├── demo-s1.pdf             自制的 S-1 样张，10 页（虚构公司）
+│   ├── demo-s1-amendment.pdf   第二份，用来试跨文档复用
+│   └── sample-export.md        导出的 Markdown 长什么样
+├── docs/
+│   └── demo.mp4        演示视频
 ├── README.md
 ├── LICENSE
+├── .gitattributes
 └── .gitignore
 ```
 
