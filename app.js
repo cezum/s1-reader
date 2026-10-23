@@ -1620,7 +1620,8 @@
   /* ================= 启动 ================= */
   function boot() {
     S.db = loadDB();
-    window.__S1 = S; // 调试入口：可在控制台查看当前状态    rebuildTermIndex();
+    window.__S1 = S; // 调试入口：可在控制台查看当前状态
+    rebuildTermIndex();
     if (S.db.settings && S.db.settings.scale) {
       S.scale = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, S.db.settings.scale));
     }
