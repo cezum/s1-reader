@@ -16,9 +16,9 @@
   把那个链接单独粘在下面这行占位符的位置（独占一行）即可，视频会渲染成播放器。
 -->
 
-**▶ 演示视频（66 秒，全程字幕讲解）：[`docs/demo.mp4`](docs/demo.mp4)**
+**▶ 演示视频（66 秒，全程字幕讲解）：[在线观看](https://cdn.jsdelivr.net/gh/cezum/s1-reader@main/docs/demo.mp4)**
 
-> 由于 GitHub 不允许 README 直接内嵌仓库内的 mp4，此处请在发布时替换为上传后的播放器链接；也可先点上面的链接下载观看。
+> 由于 GitHub 不允许 README 直接内嵌仓库内的 mp4，上面的链接走 jsDelivr CDN 直链，点开即在线播放（非下载）；想在 README 里内嵌播放器的话，请按上方注释换成 user-attachments 链接。
 
 视频里是一条完整的路径：
 
